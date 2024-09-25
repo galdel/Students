@@ -1,24 +1,57 @@
 public class Main {
     public static void main(String[] args) {
-        Student student1 = new Student("Alexey", 20, 180, 75, 15);
-        Student student2 = new Student("Dmitry", 21, 175, 85, 20);
-        Student student3 = new Student("Ivan", 19, 165, 70, 10);
+        // Создание массива студентов
+        Student[] students = {
+                new Student("Алексей", 20, 180, 75, 15),
+                new Student("Дмитрий", 21, 175, 85, 20),
+                new Student("Иван", 19, 165, 70, 10),
+                new Student("Мария", 22, 160, 55, 12)
+        };
 
-        System.out.println("Battle begins!");
+        // Инициализация переменной для хранения индикатора конца игры
+        boolean battleOver = false;
 
-        student1.attack(student2);
-        student2.attack(student1);
-        student3.attack(student2);
-        student1.attack(student2);
-        student2.attack(student1);
-        student3.attack(student2);
-        student1.attack(student2);
-        student2.attack(student1);
-        student3.attack(student2);
+        // Цикл битвы
+        int round = 1;
+        while (!battleOver) {
+            System.out.println("Раунд " + round);
 
-        student1.getStats();
-        student2.getStats();
-        student3.getStats();
+            // Каждый студент атакует случайного противника
+            for (int i = 0; i < students.length; i++) {
+                if (students[i].isAlive()) {
+                    // Находим случайного противника, который еще жив
+                    int opponentIndex;
+                    do {
+                        opponentIndex = (int) (Math.random() * students.length);
+                    } while (opponentIndex == i || !students[opponentIndex].isAlive());
 
+                    // Атака противника
+                    students[i].attack(students[opponentIndex]);
+                }
+            }
+
+            // Проверка, остался ли только один живой студент
+            int aliveCount = 0;
+            for (Student student : students) {
+                if (student.isAlive()) {
+                    aliveCount++;
+                }
+            }
+
+            // Если живым остался только один студент, битва окончена
+            if (aliveCount <= 1) {
+                battleOver = true;
+                System.out.println("Битва окончена!");
+            }
+
+            // Переход к следующему раунду
+            round++;
+        }
+
+        // Вывод результатов битвы
+        System.out.println("Результаты битвы:");
+        for (Student student : students) {
+            System.out.println(student.name + " имеет " + student.health + " здоровья.");
+        }
     }
 }
