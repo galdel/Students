@@ -1,4 +1,5 @@
-public class Main {
+
+ public class Main {
     public static void main(String[] args) {
         // Создание массива студентов
         Student[] students = {
@@ -8,12 +9,17 @@ public class Main {
                 new Student("Мария", 22, 160, 55, 12)
         };
 
+        Student id1 = new Freshman("Мария", 22, 160, 55, 12);
+
+        String studentJson = JsonHelper.toJson(id1);
+        System.out.println("Студент в формате JSON: " + studentJson);
+
         // Инициализация переменной для хранения индикатора конца игры
         boolean battleOver = false;
 
         // Цикл битвы
         int round = 1;
-        while (!battleOver) {
+       /* while (!battleOver) {
             System.out.println("Раунд " + round);
 
             // Каждый студент атакует случайного противника
@@ -53,5 +59,6 @@ public class Main {
         for (Student student : students) {
             System.out.println(student.name + " имеет " + student.health + " здоровья.");
         }
+        */
     }
 }
