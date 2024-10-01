@@ -14,6 +14,9 @@
         String studentJson = JsonHelper.toJson(id1);
         System.out.println("Студент в формате JSON: " + studentJson);
 
+        Student deserializedStudent = JsonHelper.fromJson(studentJson, Student.class);
+        System.out.println("Десериализованный студент: " + deserializedStudent.name);
+
         // Инициализация переменной для хранения индикатора конца игры
         boolean battleOver = false;
 
