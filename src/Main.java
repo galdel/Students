@@ -1,132 +1,92 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Random;
 
 public class Main {
-    public static void main(String[] args) {
 
+    // Метод для создания локальных студентов
+    public static ArrayList<Student> createLocalStudents() {
+        ArrayList<Student> students = new ArrayList<>();
+        students.add(new Freshman("Иван", 18, 175, 70, 10));
+        students.add(new Freshman("Мария", 19, 165, 55, 8));
+        students.add(new Senior("Алексей", 22, 180, 80, 15));
+        students.add(new Senior("Дмитрий", 23, 185, 90, 18));
+        students.add(new Student("Николай", 21, 178, 75, 12));
+        students.add(new Student("Ольга", 20, 170, 60, 11));
+        students.add(new Freshman("Петр", 18, 172, 68, 9));
+        students.add(new Senior("Сергей", 22, 180, 82, 16));
+        students.add(new Student("Анна", 21, 160, 54, 10));
+        students.add(new Freshman("Елена", 19, 168, 58, 7));
+        return students;
+    }
 
-        Student maria = new Freshman("Мария", 22, 160, 55, 12);
-
-        String studentJson = JsonHelper.toJson(maria);
-        System.out.println("Студент в формате JSON: " + studentJson);
-
-        Student deserializedStudent = JsonHelper.fromJson(studentJson, Student.class);
-        System.out.println("Десериализованный студент: " + deserializedStudent.name);
-
-        //Сервер
-        int port = 12345; // Порт, на котором сервер будет слушать соединения
-
-        try (ServerSocket serverSocket = new ServerSocket(port)) {
-            System.out.println("Сервер запущен и ждет соединений...");
-
-            while (true) {
-                // Принимаем клиентское соединение
-                Socket clientSocket = serverSocket.accept();
-                System.out.println("Клиент подключился!");
-
-                // Получаем данные от клиента
-                try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                     PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true)) {
-
-                    // Чтение JSON-строки
-                    String json = in.readLine();
-                    System.out.println("Получен JSON: " + json);
-
-                    // Десериализация JSON в объект Student
-                    Student student = JsonHelper.fromJson(json, Student.class);
-                    System.out.println("Получен студент: " + student.name + ", возраст: " + student.age);
-
-                    // Ответ клиенту
-                    out.println("Студент " + student.name + " успешно получен!");
-
-                    // Дополнительные действия: например, добавить студента в битву
-                } catch (IOException e) {
-                    System.out.println("Ошибка чтения данных от клиента: " + e.getMessage());
-                }
-            }
-        } catch (IOException e) {
-            System.out.println("Ошибка запуска сервера: " + e.getMessage());
-        }
-
-        //Клиент
-        /*
-        String host = "localhost"; // Адрес сервера
-        int port = 12345; // Порт сервера
-
-        // Создаем объект студента
-        Student student = new Freshman("Иван", 18, 175, 70, 10);
-
-        try (Socket socket = new Socket(host, port);
-             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-             PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
-
-            // Сериализация объекта студента в JSON
-            String studentJson = JsonHelper.toJson(student);
-            System.out.println("Отправка JSON: " + studentJson);
-
-            // Отправляем JSON на сервер
-            out.println(studentJson);
-
-            // Чтение ответа от сервера
-            String response = in.readLine();
-            System.out.println("Ответ от сервера: " + response);
-
-        } catch (IOException e) {
-            System.out.println("Ошибка при соединении с сервером: " + e.getMessage());
-        }
-    } */
-
-
-
-        // Инициализация переменной для хранения индикатора конца игры
+    // Метод для проведения битвы
+    public static Student conductBattle(ArrayList<Student> students, BattleLogger logger) {
+        Random random = new Random();
         boolean battleOver = false;
-
-        // Цикл битвы
         int round = 1;
-       /* while (!battleOver) {
-            System.out.println("Раунд " + round);
 
-            // Каждый студент атакует случайного противника
-            for (int i = 0; i < students.length; i++) {
-                if (students[i].isAlive()) {
-                    // Находим случайного противника, который еще жив
-                    int opponentIndex;
+        // Битва продолжается, пока не останется один студент
+        while (!battleOver) {
+            logger.log("Раунд " + round + " начинается!");
+
+            for (Student attacker : students) {
+                if (attacker.isAlive()) {
+                    Student opponent;
                     do {
-                        opponentIndex = (int) (Math.random() * students.length);
-                    } while (opponentIndex == i || !students[opponentIndex].isAlive());
+                        opponent = students.get(random.nextInt(students.size()));
+                    } while (attacker == opponent || !opponent.isAlive());
 
-                    // Атака противника
-                    students[i].attack(students[opponentIndex]);
+                    attacker.attack(opponent);
+                    logger.log(attacker.name + " атакует " + opponent.name + ". Здоровье " + opponent.name + ": " + opponent.health);
                 }
             }
 
-            // Проверка, остался ли только один живой студент
-            int aliveCount = 0;
-            for (Student student : students) {
-                if (student.isAlive()) {
-                    aliveCount++;
-                }
-            }
-
-            // Если живым остался только один студент, битва окончена
+            // Проверка количества живых студентов
+            long aliveCount = students.stream().filter(Student::isAlive).count();
             if (aliveCount <= 1) {
                 battleOver = true;
-                System.out.println("Битва окончена!");
+                logger.log("Битва окончена!");
             }
 
-            // Переход к следующему раунду
             round++;
         }
 
-        // Вывод результатов битвы
-        System.out.println("Результаты битвы:");
-        for (Student student : students) {
-            System.out.println(student.name + " имеет " + student.health + " здоровья.");
+        // Возвращаем победителя
+        return students.stream().filter(Student::isAlive).findFirst().get();
+    }
+
+    public static void main(String[] args) {
+        // Логгер для записи процесса битвы
+        BattleLogger logger = new BattleLogger("battle_log.txt");
+        logger.clearLog();
+
+        // 1. Запускаем сервер для приёма студента
+        StudentBattleServer server = new StudentBattleServer(12345);
+        Student receivedStudent = server.receiveStudent();
+
+        // 2. Создаем локальных студентов и добавляем принятого студента
+        ArrayList<Student> students = createLocalStudents();
+        students.add(receivedStudent);
+
+        // 3. Проводим битву и определяем победителя
+        Student winner = conductBattle(students, logger);
+
+        // 4. Работа с базой данных PostgreSQL
+        String url = "jdbc:postgresql://localhost:5432/mydatabase";
+        String user = "myuser";
+        String password = "mypassword";
+
+        try (DatabaseHelper dbHelper = new DatabaseHelper(url, user, password)) {
+            dbHelper.createTable();
+            dbHelper.saveBattleResult(winner.name, winner.health);
+        } catch (SQLException e) {
+            System.out.println("Ошибка работы с базой данных: " + e.getMessage());
         }
-        */
+
+        // 5. Отправляем победителя обратно через клиент
+        StudentBattleClient client = new StudentBattleClient("localhost", 12346);
+        client.sendStudent(winner);
+
     }
 }

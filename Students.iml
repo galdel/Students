@@ -8,5 +8,6 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="com.google.code.gson:gson:2.11.0" level="project" />
+    <orderEntry type="library" name="org.ancoron.postgresql:org.postgresql:9.1.901.jdbc4.1-rc9" level="project" />
   </component>
 </module>
